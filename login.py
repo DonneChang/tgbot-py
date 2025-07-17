@@ -53,4 +53,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    user_app.run()
+    asyncio.run(main())
