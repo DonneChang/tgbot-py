@@ -17,6 +17,7 @@ if proxy_set["proxy_enable"] == True:
 else:
     proxy = None
 
+
 async def main():
     workdir_path = Path("sessions")
     workdir_path.mkdir(parents=True, exist_ok=True)
@@ -40,8 +41,8 @@ async def main():
     project_name, tgbot_sate = await system_version_get()
     re_msg = f"您的{project_name} 项目已登录,本次为首次登录 状态如下:\n\n" + tgbot_sate
     async with user_app:
-        
-        await user_app.send_message(PT_GROUP_ID['BOT_MESSAGE_CHAT'], re_msg)
+
+        await user_app.send_message(PT_GROUP_ID["BOT_MESSAGE_CHAT"], re_msg)
         logger.info("Mytgbot首次登录成功，登录信息创建成功")
         command = ["supervisorctl", "start", "main"]
         result = subprocess.run(command, capture_output=True, text=True)
@@ -53,4 +54,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    user_app.run()
+    asyncio.run(main)
