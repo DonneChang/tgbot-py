@@ -127,7 +127,8 @@ class E(BetModel):
 
 class S(BetModel):
     def guess(self, data):
-        _data = [1 if i > 3 else -1 for i in asyncio.run(Zhuqueydx.get_data(limit=200))]
+        ydx_data = asyncio.run(Zhuqueydx.get_data(limit=200))
+        _data = [1 if i > 3 else -1 for i in ydx_data]
         n = 2
         base_value = 1000
         cumulative_data = np.zeros_like(_data, dtype=float)
