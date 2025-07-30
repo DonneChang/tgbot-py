@@ -1,7 +1,35 @@
+# 标准库
 from abc import ABC, abstractmethod
 import random
 
+# 第三方库
+import pandas as pd
+import numpy as np
+
+# 自定义
 from app import logger
+
+
+def make_MACD(datas: pd.DataFrame, short=12, long=26, mid=9):
+    ema1 = datas["close"].ewm((short - 1) / 2, adjust=False).mean()
+    ema2 = datas["close"].ewm((long - 1) / 2, adjust=False).mean()
+    dif = ema1 - ema2
+    dea = dif.ewm((mid - 1) / 2, adjust=False).mean()
+    macd = (dif - dea) * 2
+    return macd
+
+
+def make_KDJ(datas: pd.DataFrame, days=9, kn=3, dn=3):
+    lowest = datas["low"].rolling(days).min()
+    lowest = lowest.fillna(datas["low"].expanding().min())
+    highest = datas["high"].rolling(days).max()
+    lowest = lowest.fillna(datas["high"].expanding().max())
+    rsv = (datas["close"] - lowest) / (highest - lowest) * 100
+    rsv = rsv.fillna(100)
+    k = rsv.ewm(kn - 1, adjust=False).mean()
+    d = k.ewm(dn - 1, adjust=False).mean()
+    j = 3 * k - 2 * d
+    return pd.concat([k, d, j], axis=1)
 
 
 class BetModel(ABC):
@@ -10,6 +38,7 @@ class BetModel(ABC):
 
     @abstractmethod
     def guess(self, data):
+        """data 是 一个 40个数字的 01数组 最后一个是 最近发生的 0小1大"""
         pass
 
     def test(self, data: list[int]):
@@ -116,7 +145,46 @@ class E(BetModel):
         return -1
 
 
-models: dict[str, BetModel] = {"a": A(), "b": B(), "e": E()}
+class S(BetModel):
+    def guess(self, data):
+        _data = [1 if i > 0 else -1 for i in data]
+        n = 2
+        base_value = 40
+        cumulative_data = np.zeros_like(_data, dtype=float)
+        cumulative_data[0] = base_value + _data[0]
+        for i in range(1, len(_data)):
+            cumulative_data[i] = cumulative_data[i - 1] + _data[i]
+        num_windows = len(_data) // n
+        windows = cumulative_data[: num_windows * n].reshape(-1, n)
+        window_data = pd.DataFrame(
+            {
+                "close": windows[:, -1],  # Last cumulative value in each window
+                "high": np.max(windows, axis=1),  # Max in each window
+                "low": np.min(windows, axis=1),  # Min in each window
+            }
+        )
+        macd = make_MACD(window_data)
+        kdj = make_KDJ(window_data)
+
+        # 获取最后一个J-K和MACD值
+        last_j = kdj.iloc[-1, 2]  # J是第三列
+        last_k = kdj.iloc[-1, 0]  # K是第一列
+        last_macd = macd.iloc[-1]
+
+        if last_j - last_k > 0 and last_macd > 0:
+            return 1
+        if last_j - last_k < 0 and last_macd < 0:
+            return 0
+        return data[-1]
+
+    def get_bet_count(self, data: list[int], start_count=0, stop_count=0):
+        bet_count = self.fail_count - start_count
+        if 0 <= bet_count < stop_count:
+            return bet_count
+        return -1
+
+
+models: dict[str, BetModel] = {"a": A(), "b": B(), "e": E(), "s": S()}
 
 
 def test(data: list[int]):
