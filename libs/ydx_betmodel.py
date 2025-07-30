@@ -129,6 +129,8 @@ class S(BetModel):
     async def guess(self, data):
         ydx_data = await Zhuqueydx.get_data(limit=200)
         _data = [1 if i > 3 else -1 for i in ydx_data]
+        _data = _data[::-1]
+        logger.info(_data)
         n = 2
         base_value = 1000
         cumulative_data = np.zeros_like(_data, dtype=float)
@@ -145,11 +147,11 @@ class S(BetModel):
             }
         )
         kdj = make_KDJ(window_data)
-
+        
         # 获取最后一个J-K和MACD值
         last_j = kdj.iloc[-1, 2]  # J是第三列
         last_k = kdj.iloc[-1, 0]  # K是第一列
-        logger.debug(f"J:{last_j:.02d}, K:{last_k:.02d}")
+        logger.info(f"J:{last_j:.02f}, K:{last_k:.02f}")
         if last_j >= last_k:
             return 1
         if last_j > last_k:
