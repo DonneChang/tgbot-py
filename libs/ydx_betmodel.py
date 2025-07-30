@@ -127,9 +127,7 @@ class E(BetModel):
 
 class S(BetModel):
     def guess(self, data):
-        _data = [
-            1 if i > 3 else -1 for i in asyncio.run(Zhuqueydx.get_data(limit=200))
-        ]
+        _data = [1 if i > 3 else -1 for i in asyncio.run(Zhuqueydx.get_data(limit=200))]
         n = 2
         base_value = 1000
         cumulative_data = np.zeros_like(_data, dtype=float)
@@ -145,19 +143,16 @@ class S(BetModel):
                 "low": np.min(windows, axis=1),  # Min in each window
             }
         )
-        macd = make_MACD(window_data)
         kdj = make_KDJ(window_data)
 
         # 获取最后一个J-K和MACD值
         last_j = kdj.iloc[-1, 2]  # J是第三列
         last_k = kdj.iloc[-1, 0]  # K是第一列
-        last_macd = macd.iloc[-1]
 
-        if last_j - last_k > 0 and last_macd > 0:
+        if last_j - last_k >= 0:
             return 1
-        if last_j - last_k < 0 and last_macd < 0:
+        if last_j - last_k < 0:
             return 0
-        return data[-1]
 
     def get_bet_count(self, data: list[int], start_count=0, stop_count=0):
         bet_count = self.fail_count - start_count
