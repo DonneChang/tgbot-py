@@ -18,7 +18,7 @@ async def zhuque_ydx_switch(client: Client, message: Message):
     _data = np.array(data, dtype=int)
     _data = np.where(_data > 3, 1, 0)
     data = _data.tolist()
-    models = test(data)
+    models = await test(data)
     r = "```\n"
     for k in models:
         r += f"模型{k}:\n历史失败次数:{models[k]["loss_count"]}\n最大失败轮次:{models[k]["max_nonzero_index"]}\n净胜次数:{models[k]["win_count"]}\n胜率:{models[k]["win_rate"]:.02%}\n当前失败轮次:{models[k]["turn_loss_count"]}\n模型预测:{models[k]["guess"]}\n\n"

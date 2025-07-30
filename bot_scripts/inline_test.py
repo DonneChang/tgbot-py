@@ -23,7 +23,7 @@ async def calculate_ydx_results(count):
     _data = np.array(data, dtype=int)
     _data = np.where(_data > 3, 1, 0)
     data = _data.tolist()
-    models = test(data)
+    models = await test(data)
 
     r = f"测试{count}次结果:\n```\n"
     for k in models:

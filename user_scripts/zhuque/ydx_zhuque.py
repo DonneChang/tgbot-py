@@ -297,8 +297,8 @@ async def zhuque_ydx_models(
     bet_model = bet_models[model.lower()]
     data = await history_list(message)
     for md in bet_models.values():
-        md.guess(data)
-    dx = bet_model.guess_dx
+        await md.guess(data)
+    dx = await bet_model.guess(data)
     logger.info(f"猜测结果 dx={dx}, 数据={data}, 模型={model}")
     # 0,1 转为 s,b
     bet_side = opposite_map[dx]

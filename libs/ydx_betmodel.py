@@ -17,18 +17,18 @@ class BetModel(ABC):
     guess_dx: int = -1
 
     @abstractmethod
-    def guess(self, data):
+    async def guess(self, data):
         """data 是 一个 40个数字的 01数组 最后一个是 最近发生的 0小1大"""
         pass
 
-    def test(self, data: list[int]):
+    async def test(self, data: list[int]):
         loss_count = [0 for _ in range(50)]
         turn_loss_count = 0
         win_count = 0
         total_count = 0
         for i in range(40, len(data) + 1):
             data_i = data[i - 40 : i]
-            dx = self.guess(data_i)
+            dx = await self.guess(data_i)
             if i < len(data):
                 total_count += 1
                 self.set_result(data[i])
@@ -93,13 +93,13 @@ class BetModel(ABC):
 
 
 class A(BetModel):
-    def guess(self, data):
+    async def guess(self, data):
         self.guess_dx = 1 - data[-1]
         return self.guess_dx
 
 
 class B(BetModel):
-    def guess(self, data):
+    async def guess(self, data):
         self.guess_dx = data[-1]
         return self.guess_dx
 
@@ -111,7 +111,7 @@ class B(BetModel):
 
 
 class E(BetModel):
-    def guess(self, data):
+    async def guess(self, data):
         if self.guess_dx == -1:
             self.guess_dx = random.randint(0, 1)
         if self.fail_count % 2 == 0:
@@ -126,8 +126,8 @@ class E(BetModel):
 
 
 class S(BetModel):
-    def guess(self, data):
-        ydx_data = asyncio.run(Zhuqueydx.get_data(limit=200))
+    async def guess(self, data):
+        ydx_data = await Zhuqueydx.get_data(limit=200)
         _data = [1 if i > 3 else -1 for i in ydx_data]
         n = 2
         base_value = 1000
@@ -162,9 +162,9 @@ class S(BetModel):
 models: dict[str, BetModel] = {"a": A(), "b": B(), "e": E(), "s": S()}
 
 
-def test(data: list[int]):
+async def test(data: list[int]):
     data.reverse()
     ret = {}
     for model in models:
-        ret[model] = models[model].test(data)
+        ret[model] = await models[model].test(data)
     return ret
