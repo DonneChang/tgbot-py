@@ -130,7 +130,6 @@ class S(BetModel):
         ydx_data = await Zhuqueydx.get_data(limit=200)
         _data = [1 if i > 3 else -1 for i in ydx_data]
         _data = _data[::-1]
-        logger.info(_data)
         n = 2
         base_value = 1000
         cumulative_data = np.zeros_like(_data, dtype=float)
