@@ -154,7 +154,7 @@ class S(BetModel):
         logger.info(f"J:{last_j:.02f}, K:{last_k:.02f}")
         if last_j >= last_k:
             return 1
-        if last_j > last_k:
+        if last_j < last_k:
             return 0
 
     def get_bet_count(self, data: list[int], start_count=0, stop_count=0):
