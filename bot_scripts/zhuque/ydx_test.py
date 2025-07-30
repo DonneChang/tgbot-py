@@ -25,3 +25,9 @@ async def zhuque_ydx_switch(client: Client, message: Message):
     r += "```"
     # 赋值给模型同步
     await reply_message.edit(r)
+
+
+@Client.on_message(filters.command("ydxclean") & filters.chat(MY_TGID))
+async def ydxclean(client: Client, message: Message):
+    await Zhuqueydx.remove_duplicate_records()
+    await message.reply("清理完成")

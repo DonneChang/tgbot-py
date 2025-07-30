@@ -8,28 +8,7 @@ import numpy as np
 
 # 自定义
 from app import logger
-
-
-def make_MACD(datas: pd.DataFrame, short=12, long=26, mid=9):
-    ema1 = datas["close"].ewm((short - 1) / 2, adjust=False).mean()
-    ema2 = datas["close"].ewm((long - 1) / 2, adjust=False).mean()
-    dif = ema1 - ema2
-    dea = dif.ewm((mid - 1) / 2, adjust=False).mean()
-    macd = (dif - dea) * 2
-    return macd
-
-
-def make_KDJ(datas: pd.DataFrame, days=9, kn=3, dn=3):
-    lowest = datas["low"].rolling(days).min()
-    lowest = lowest.fillna(datas["low"].expanding().min())
-    highest = datas["high"].rolling(days).max()
-    lowest = lowest.fillna(datas["high"].expanding().max())
-    rsv = (datas["close"] - lowest) / (highest - lowest) * 100
-    rsv = rsv.fillna(100)
-    k = rsv.ewm(kn - 1, adjust=False).mean()
-    d = k.ewm(dn - 1, adjust=False).mean()
-    j = 3 * k - 2 * d
-    return pd.concat([k, d, j], axis=1)
+from models.ydx_db_modle import make_KDJ, make_MACD
 
 
 class BetModel(ABC):

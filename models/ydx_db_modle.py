@@ -3,8 +3,10 @@ from datetime import datetime
 from typing import Optional, Tuple
 
 # 第三方库
-from sqlalchemy import String, Integer, Numeric, DateTime, func, desc, select
+from sqlalchemy import String, Integer, Numeric, DateTime, delete, func, desc, select
 from sqlalchemy.orm import mapped_column, Mapped
+import pandas as pd
+import numpy as np
 
 # 自定义模块
 from models.database import Base
@@ -127,3 +129,91 @@ class Zhuqueydx(Base):
             if result:
                 return result
             return None
+
+    @classmethod
+    async def remove_duplicate_records(cls):
+        """
+        删除create_time相同的重复记录，只保留每个create_time的最新记录(id最大的)
+        """
+        async with async_session_maker() as session, session.begin():
+            # 子查询：找出每个create_time对应的最大id
+            subq = (
+                select(
+                    cls.create_time,
+                    func.max(cls.id).label("max_id")
+                )
+                .group_by(cls.create_time)
+                .subquery()
+            )
+
+            # 删除不在子查询中的记录
+            stmt = (
+                delete(cls)
+                .where(
+                    cls.id.not_in(
+                        select(subq.c.max_id)
+                    )
+                )
+            )
+            await session.execute(stmt)
+
+
+
+def make_MACD(datas: pd.DataFrame, short=12, long=26, mid=9):
+    ema1 = datas["close"].ewm((short - 1) / 2, adjust=False).mean()
+    ema2 = datas["close"].ewm((long - 1) / 2, adjust=False).mean()
+    dif = ema1 - ema2
+    dea = dif.ewm((mid - 1) / 2, adjust=False).mean()
+    macd = (dif - dea) * 2
+    return macd
+
+
+def make_KDJ(datas: pd.DataFrame, days=9, kn=3, dn=3):
+    lowest = datas["low"].rolling(days).min()
+    lowest = lowest.fillna(datas["low"].expanding().min())
+    highest = datas["high"].rolling(days).max()
+    lowest = lowest.fillna(datas["high"].expanding().max())
+    rsv = (datas["close"] - lowest) / (highest - lowest) * 100
+    rsv = rsv.fillna(100)
+    k = rsv.ewm(kn - 1, adjust=False).mean()
+    d = k.ewm(dn - 1, adjust=False).mean()
+    j = 3 * k - 2 * d
+    return pd.concat([k, d, j], axis=1)
+
+
+class YdxStock(Base):
+    __tablename__ = "ydx_stock"
+    ydxid: Mapped[int] = mapped_column(Integer)
+    close: Mapped[int] = mapped_column(Integer)
+    high: Mapped[int] = mapped_column(Integer)
+    low: Mapped[int] = mapped_column(Integer)
+    K: Mapped[float] = mapped_column(Numeric(16, 2))
+    D: Mapped[float] = mapped_column(Numeric(16, 2))
+    J: Mapped[float] = mapped_column(Numeric(16, 2))
+    MACD: Mapped[float] = mapped_column(Numeric(16, 2))
+
+    # @classmethod
+    # async def init(cls):
+    #     # 获取Zhuqueydx表中最新记录的id
+    #     async with async_session_maker() as session, session.begin():
+    #         stmt = select(Zhuqueydx.id).order_by(desc(Zhuqueydx.create_time)).limit(1)
+    #         result = (await session.execute(stmt)).scalar_one_or_none()
+    #         ydxid = result + 1 if result else 1  # 如果没有记录则从1开始
+            
+    #     n = 2
+    #     base_value = 1000
+    #     cumulative_data = np.zeros_like(_data, dtype=float)
+    #     cumulative_data[0] = base_value + _data[0]
+    #     for i in range(1, len(_data)):
+    #         cumulative_data[i] = cumulative_data[i - 1] + _data[i]
+    #     num_windows = len(_data) // n
+    #     windows = cumulative_data[: num_windows * n].reshape(-1, n)
+    #     window_data = pd.DataFrame(
+    #         {
+    #             "close": windows[:, -1],  # Last cumulative value in each window
+    #             "high": np.max(windows, axis=1),  # Max in each window
+    #             "low": np.min(windows, axis=1),  # Min in each window
+    #         }
+    #     )
+    #     macd = make_MACD(window_data)
+    #     kdj = make_KDJ(window_data)
