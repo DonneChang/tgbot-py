@@ -146,10 +146,11 @@ class S(BetModel):
             }
         )
         kdj = make_KDJ(window_data)
-        
+        # logger.info(str(window_data))
         # 获取最后一个J-K和MACD值
         last_j = kdj.iloc[-1, 2]  # J是第三列
         last_k = kdj.iloc[-1, 0]  # K是第一列
+        # logger.info(str(kdj))
         logger.info(f"J:{last_j:.02f}, K:{last_k:.02f}")
         if last_j >= last_k:
             return 1
