@@ -149,10 +149,10 @@ class S(BetModel):
         # 获取最后一个J-K和MACD值
         last_j = kdj.iloc[-1, 2]  # J是第三列
         last_k = kdj.iloc[-1, 0]  # K是第一列
-
-        if last_j - last_k >= 0:
+        logger.debug(f"J:{last_j:.02d}, K:{last_k:.02d}")
+        if last_j >= last_k:
             return 1
-        if last_j - last_k < 0:
+        if last_j > last_k:
             return 0
 
     def get_bet_count(self, data: list[int], start_count=0, stop_count=0):
