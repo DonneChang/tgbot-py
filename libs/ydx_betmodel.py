@@ -149,7 +149,7 @@ class S(BetModel):
     def guess(self, data):
         _data = [1 if i > 0 else -1 for i in data]
         n = 2
-        base_value = 40
+        base_value = 1000
         cumulative_data = np.zeros_like(_data, dtype=float)
         cumulative_data[0] = base_value + _data[0]
         for i in range(1, len(_data)):
