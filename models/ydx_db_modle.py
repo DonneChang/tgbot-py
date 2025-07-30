@@ -133,28 +133,30 @@ class Zhuqueydx(Base):
     @classmethod
     async def remove_duplicate_records(cls):
         """
-        删除create_time相同的重复记录，只保留每个create_time的最新记录(id最大的)
+        删除与上条记录create_time差值小于50秒的记录
+        保留时间最早的记录
         """
+        from datetime import timedelta
+        
         async with async_session_maker() as session, session.begin():
-            # 子查询：找出每个create_time对应的最大id
-            subq = (
-                select(
-                    cls.create_time,
-                    func.max(cls.id).label("max_id")
-                )
-                .group_by(cls.create_time)
-                .subquery()
-            )
-
-            # 删除不在子查询中的记录
-            stmt = (
-                delete(cls)
-                .where(
-                    cls.id.not_in(
-                        select(subq.c.max_id)
-                    )
-                )
-            )
+            # 获取所有记录按create_time排序
+            stmt = select(cls.id, cls.create_time).order_by(cls.create_time)
+            records = (await session.execute(stmt)).all()
+            
+            if len(records) < 2:
+                return  # 记录不足无需处理
+                
+            # 找出要保留的记录ID（时间差>=50秒的记录）
+            keep_ids = [records[0].id]  # 保留第一条
+            prev_time = records[0].create_time
+            
+            for record in records[1:]:
+                if (record.create_time - prev_time) >= timedelta(seconds=50):
+                    keep_ids.append(record.id)
+                    prev_time = record.create_time
+            
+            # 删除不在保留列表中的记录
+            stmt = delete(cls).where(cls.id.not_in(keep_ids))
             await session.execute(stmt)
 
 
