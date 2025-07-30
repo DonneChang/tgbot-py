@@ -183,6 +183,7 @@ def make_KDJ(datas: pd.DataFrame, days=9, kn=3, dn=3):
 
 class YdxStock(Base):
     __tablename__ = "ydx_stock"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     ydxid: Mapped[int] = mapped_column(Integer)
     close: Mapped[int] = mapped_column(Integer)
     high: Mapped[int] = mapped_column(Integer)
