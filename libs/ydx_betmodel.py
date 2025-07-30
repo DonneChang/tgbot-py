@@ -1,5 +1,6 @@
 # 标准库
 from abc import ABC, abstractmethod
+import asyncio
 import random
 
 # 第三方库
@@ -8,7 +9,7 @@ import numpy as np
 
 # 自定义
 from app import logger
-from models.ydx_db_modle import make_KDJ, make_MACD
+from models.ydx_db_modle import make_KDJ, make_MACD, Zhuqueydx
 
 
 class BetModel(ABC):
@@ -126,7 +127,9 @@ class E(BetModel):
 
 class S(BetModel):
     def guess(self, data):
-        _data = [1 if i > 0 else -1 for i in data]
+        _data = [
+            1 if i > 3 else -1 for i in asyncio.run(Zhuqueydx.get_data(limit=200))
+        ]
         n = 2
         base_value = 1000
         cumulative_data = np.zeros_like(_data, dtype=float)
