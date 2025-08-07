@@ -18,7 +18,7 @@ async def basic_set(client: Client, message: Message):
     # 检查命令参数
     args = message.text.split()
     if len(args) != 2:
-        await message.reply("使用格式: /transmsgset <chatid>|off")
+        await message.reply("使用格式: /trans115search <chatid> | off")
         return
     try:
         chat_id = int(args[1])
