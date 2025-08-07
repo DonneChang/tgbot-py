@@ -19,7 +19,7 @@ async def basic_set(client: Client, message: Message):
     args = message.text.split()
     if len(args) != 2:
         await message.reply(
-            "使用格式: \n`/trans115search <chatid>`\n`/trans115search off`"
+            "使用格式: \n`/trans115search` chatid\n`/trans115search off`"
         )
         return
     try:
