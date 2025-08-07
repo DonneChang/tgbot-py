@@ -26,4 +26,5 @@ async def forward_message(client: Client, message: Message):
         chat_id,
         text=message.caption if message.caption else message.text,
         entities=message.entities,
+        disable_web_page_preview=True,
     )
