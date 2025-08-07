@@ -16,7 +16,6 @@ SECTION = "TRAN115SEARCH"
 def listen_115search_filter(_, __, m: Message):
     if state_manager.get_item(SECTION, "chat_id"):
         return bool(m.from_user.is_bot and m.chat.id == -1002466900287)
-        return bool(m.chat.id == -1002442286650)
 
 
 @Client.on_message(filters.create(listen_115search_filter) & filters.regex(r"列表"))
