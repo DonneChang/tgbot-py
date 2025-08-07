@@ -23,7 +23,6 @@ def listen_115search_filter(_, __, m: Message):
 async def forward_message(client: Client, message: Message):
     chat_id = state_manager.get_item(SECTION, "chat_id")
     bot_app = get_bot_app()
-    await message.copy(chat_id)
     await bot_app.send_message(
         chat_id,
         text=message.caption if message.caption else message.text,
