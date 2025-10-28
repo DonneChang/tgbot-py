@@ -1,10 +1,10 @@
 # 前置加速
 import sys
 
-if sys.platform != "win32":
-    import uvloop
+# if sys.platform != "win32":
+#     import uvloop
 
-    uvloop.install()
+#     uvloop.install()
 
 # 标准库
 import asyncio
