@@ -16,13 +16,15 @@ from schedulers import scheduler
 
 trgatid = -4200814739
 TRGATID = -1001726902866
+SITE_NAME = "ourbits"
 #@scheduler.scheduled_job("cron", hour="0,3,6,9,12,15,18,21", minute="0", second="0", id="ourBits_send_messages")
 
 #async def ourbits_seed_messges():
 #    await app.send_message(trgatid,f"祝贺OurBits八周年快乐")
 
-
-@scheduler.scheduled_job("cron", hour="2,5,8,11,14,19,20,21", minute="57", second="59", id="ourbits_send_msg")
+hour = state_manager.get_item(SITE_NAME.upper(),"hour","2,5,8,11,14,19,20,21")
+minute = state_manager.get_item(SITE_NAME.upper(),"minute","59")
+@scheduler.scheduled_job("cron", hour=hour, minute=minute, second="59", id="ourbits_send_msg")
 
 async def ourbits_send_msg():
     from app import get_user_app
@@ -31,4 +33,4 @@ async def ourbits_send_msg():
     start_time = time.time()
     while i< 316180000:     
         i+=1
-    await user_app.send_message(trgatid,f"祝贺OurBits八周年快乐")
+    await user_app.send_message(trgatid,f"祝OurBits九周年快乐！！")
