@@ -24,13 +24,13 @@ SITE_NAME = "ourbits"
 
 hour = state_manager.get_item(SITE_NAME.upper(),"hour","2,5,8,11,14,19,20,21")
 minute = state_manager.get_item(SITE_NAME.upper(),"minute","59")
+offset = state_manager.get_item(SITE_NAME.upper(),"offset",1)
 @scheduler.scheduled_job("cron", hour=hour, minute=minute, second="59", id="ourbits_send_msg")
-
 async def ourbits_send_msg():
     from app import get_user_app
     user_app = get_user_app()
     i = 0
     start_time = time.time()
-    while i< 316180000:     
+    while i< offset:     
         i+=1
     await user_app.send_message(trgatid,f"祝OurBits九周年快乐！！")
