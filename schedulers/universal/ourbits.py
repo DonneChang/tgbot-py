@@ -14,8 +14,6 @@ from models.redpocket_db_modle import Redpocket
 from schedulers import scheduler
 
 
-trgatid = -4200814739
-TRGATID = -1001726902866
 SITE_NAME = "ourbits"
 #@scheduler.scheduled_job("cron", hour="0,3,6,9,12,15,18,21", minute="0", second="0", id="ourBits_send_messages")
 
@@ -25,6 +23,7 @@ SITE_NAME = "ourbits"
 hour = state_manager.get_item(SITE_NAME.upper(),"hour","2,5,8,11,14,19,20,21")
 minute = state_manager.get_item(SITE_NAME.upper(),"minute","59")
 offset = state_manager.get_item(SITE_NAME.upper(),"offset",1)
+TRGATID = state_manager.get_item(SITE_NAME.upper(),"trgatid",-1001726902866) 
 @scheduler.scheduled_job("cron", hour=hour, minute=minute, second="59", id="ourbits_send_msg")
 async def ourbits_send_msg():
     from app import get_user_app
