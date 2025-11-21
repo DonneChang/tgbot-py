@@ -11,10 +11,12 @@ scheduler = AsyncIOScheduler()
 
 from .zhuque.fireGenshinCharacterMagic import zhuque_autofire_firsttimeget
 from .universal.auto_changename import auto_changename_temp
+from .universal.ourbits import ourbits_send_msg
 
 scheduler_jobs = {
     "autofire": zhuque_autofire_firsttimeget,
-    "autochangename": auto_changename_temp
+    "autochangename": auto_changename_temp,
+    "ourbits_send_msg": ourbits_send_msg
 }
 
 async def start_scheduler():    
