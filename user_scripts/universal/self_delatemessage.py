@@ -12,7 +12,7 @@ from pyrogram.types import Message
 
 @Client.on_message(
         filters.me
-        & filters.command("dme")
+        & filters.command("dme", prefixes=",")
     )
 
 async def self_delatemessage(client: Client, message: Message):

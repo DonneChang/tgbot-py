@@ -353,7 +353,7 @@ async def monitor_channels(client: Client, message: Message):
 
 # ================== 手动查询媒体信息 ==================
 @Client.on_message(
-    filters.me & filters.command("getmedia")
+    filters.me & filters.command("getmedia", prefixes=[",", "，"])
 )
 async def getmedia(client: Client, message: Message):
     

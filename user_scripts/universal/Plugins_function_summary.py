@@ -18,7 +18,7 @@ from libs import others
 mess_path = Path("temp_file/get_media")
 
 
-@Client.on_message(filters.me & filters.command("re"))
+@Client.on_message(filters.me & filters.command("re", prefixes=[",", "，"]))
 async def forward_to_group(client: Client, message: Message):
 
     await message.delete()
@@ -55,7 +55,7 @@ async def forward_to_group(client: Client, message: Message):
     
 
 
-@Client.on_message(filters.me & filters.command("getmsg"))
+@Client.on_message(filters.me & filters.command("getmsg", prefixes=[",", "，"]))
 async def get_message(client: Client, message: Message):
     """
     获取消息信息
@@ -75,7 +75,7 @@ async def get_message(client: Client, message: Message):
     await message.delete()
 
 
-@Client.on_message(filters.me & filters.command("id"))
+@Client.on_message(filters.me &  filters.command("id", prefixes=[",", "，"]))
 async def get_id(client: Client, message: Message):
     """
     用户ID查询

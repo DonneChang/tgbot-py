@@ -16,7 +16,7 @@ async def get_video_url():
 
 @Client.on_message(                                                                    
         filters.me
-        & filters.command("xjj")
+        & filters.command("xjj", prefixes=[",", "，"])
     )
 async def xjj(client: Client, message: Message):
     if message.chat and message.chat.id in []:

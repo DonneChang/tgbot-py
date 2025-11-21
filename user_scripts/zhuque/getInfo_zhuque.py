@@ -71,7 +71,7 @@ async def getInfo():
 
 
 #########################朱雀信息查询###############################   
-@Client.on_message(filters.me & filters.command("getinfo"))
+@Client.on_message(filters.me & filters.command("getinfo", prefixes=[",", "，"]))
 async def zhuque_getInfo(client: Client, message: Message):
     starttime = time.time()
     send_result = await message.reply(f"```\n信息查询中……```")

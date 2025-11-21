@@ -14,7 +14,7 @@ ju_pai_api = "https://api.txqq.pro/api/zt.php"
 
 @Client.on_message(                                                                    
         filters.me
-        & filters.command("jupai")
+        & filters.command("jupai", prefixes=[",", "，"])
         )
 async def ju_pai(client: Client, message: Message):
 

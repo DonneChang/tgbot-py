@@ -73,7 +73,7 @@ async def u2_dmhy_gift(recv_ID,amount,message):
 
 
 
-@Client.on_message(filters.me & filters.command(["u2", "u2s"]))
+@Client.on_message(filters.me & filters.command(["u2", "u2s"], prefixes=[",", "，"]))
 async def u2_dmhy_transform_pay(client: Client, message: Message):
     cmd = message.command
     command_name = cmd[0].lower()

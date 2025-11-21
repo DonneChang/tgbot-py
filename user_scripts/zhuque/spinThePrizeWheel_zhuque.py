@@ -117,7 +117,7 @@ async def fetch_batch(count, session: aiohttp.ClientSession, stats, lock):
             logger.exception(f"抽奖异常: {e}")
 
 
-@Client.on_message(filters.me & filters.command("prizewheel"))
+@Client.on_message(filters.me & filters.command("prizewheel", prefixes=[",", "，"]))
 async def zhuque_ThePrizeWheel(client: Client, message: Message):
     try:
         if len(message.command) != 2 or not message.command[1].isdigit():

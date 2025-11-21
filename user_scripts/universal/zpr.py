@@ -75,8 +75,8 @@ async def get_result(message, r18=0, num=3, size = "regular", tag=""):
 
 @Client.on_message(
         filters.me
-        & (filters.command("zpr")
-        | filters.command("zp"))
+        & (filters.command("zpr", prefixes=[",", "，"])
+        | filters.command("zp", prefixes=[",", "，"]))
     )
 async def zpr(client: Client, message: Message):
  
