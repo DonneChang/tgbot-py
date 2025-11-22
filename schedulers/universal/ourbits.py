@@ -32,4 +32,4 @@ async def ourbits_send_msg():
     start_time = time.time()
     while i< offset:     
         i+=1
-    await user_app.send_message(TRGATID,f"祝OurBits九周年快乐！！")
+    await user_app.send_message(TRGATID,f"祝OurBits九周年快乐")
