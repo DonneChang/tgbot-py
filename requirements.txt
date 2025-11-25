@@ -27,3 +27,4 @@ pandas
 openpyxl
 numpy
 aiofiles
+FFmpeg
