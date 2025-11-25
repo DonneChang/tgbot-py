@@ -1,18 +1,19 @@
 """
-Telegram 贴纸转存脚本 - Pyrogram v2 完整兼容版
+Telegram 贴纸转存脚本
 支持静态和动态贴纸的转存到自定义贴纸包
+完全兼容 Pyrogram v2
 """
 
 import os
 import asyncio
 import logging
-from pathlib import Path
 from typing import Optional, Tuple
+from pathlib import Path
 
 from pyrogram import Client, filters, types
 from pyrogram.errors import FloodWait
-from pyrogram.raw import functions, types as raw_types
 from pyrogram.raw.types import InputDocument, InputStickerSetItem, InputStickerSetShortName, InputUserSelf
+from pyrogram.raw import functions
 
 from libs.state import state_manager
 
@@ -20,13 +21,14 @@ from libs.state import state_manager
 # 配置区域
 # ============================================================
 class Config:
+    """脚本配置"""
     STATIC_SIZE = 512
     ANIMATED_SIZE = 512
     ANIMATED_FPS = 30
     ANIMATED_MAX_DURATION = 3
     ANIMATED_BITRATE = "256k"
     DEFAULT_EMOJI = "🤔"
-    SITE_NAME = "stickers"
+    SITE_NAME = 'stickers'
     DEFAULT_PACK_NAME = ""
     TEMP_DIR = Path("./temp_stickers")
 
@@ -49,6 +51,7 @@ logger = logging.getLogger(__name__)
 # 媒体转换模块
 # ============================================================
 class MediaConverter:
+
     @staticmethod
     async def convert_to_sticker_format(input_path: str, is_animated: bool = False) -> Optional[str]:
         try:
@@ -56,8 +59,9 @@ class MediaConverter:
             output_path = str(Path(input_path).with_suffix("")) + "_processed" + output_ext
 
             scale_filter = (
-                "scale='if(gt(iw,ih),{0},-1)':'if(gt(iw,ih),-1,{0})'"
-                .format(Config.ANIMATED_SIZE if is_animated else Config.STATIC_SIZE)
+                "scale='if(gt(iw,ih),{0},-1)':'if(gt(iw,ih),-1,{0})'".format(
+                    Config.ANIMATED_SIZE if is_animated else Config.STATIC_SIZE
+                )
             )
 
             if is_animated:
@@ -75,7 +79,10 @@ class MediaConverter:
                 cmd = ["ffmpeg", "-i", input_path, "-vf", scale_filter, "-y", output_path]
 
             logger.info(f"执行 FFmpeg 转换: {'动态' if is_animated else '静态'}贴纸")
-            process = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+
+            process = await asyncio.create_subprocess_exec(
+                *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+            )
             stdout, stderr = await process.communicate()
 
             if process.returncode != 0:
@@ -88,15 +95,17 @@ class MediaConverter:
 
             logger.error("转换后文件不存在或为空")
             return None
+
         except Exception as e:
             logger.error(f"媒体转换异常: {e}")
             return None
 
 
 # ============================================================
-# 贴纸管理模块
+# 贴纸包管理模块
 # ============================================================
 class StickerManager:
+
     def __init__(self, client: Client):
         self.client = client
 
@@ -115,19 +124,18 @@ class StickerManager:
         return None, False
 
     async def upload_and_get_input_document(self, file_path: str) -> Optional[InputDocument]:
+        """
+        上传文件到 Telegram 并返回 InputDocument
+        完全兼容 Pyrogram v2
+        """
         try:
-            # 上传文件到 Saved Messages
-            saved_msg = await self.client.send_document("me", file_path, force_document=True)
-            doc = saved_msg.document
-
-            # 构造 InputDocument
+            uploaded = await self.client.upload_file(file_path)
+            # Pyrogram v2 原生 raw 使用 InputDocument
             input_doc = InputDocument(
-                id=doc.file_id,
-                access_hash=doc.file_hash if hasattr(doc, "file_hash") else 0,
-                file_reference=doc.file_reference
+                id=uploaded.id,
+                access_hash=uploaded.access_hash,
+                file_reference=b"",
             )
-
-            await saved_msg.delete()
             return input_doc
 
         except FloodWait as e:
@@ -147,14 +155,21 @@ class StickerManager:
                     sticker=sticker_item
                 )
             )
-            return True, f"✅ 成功添加到贴纸包 `{pack_short_name}`"
+            return True, f"✅ 成功添加到贴纸包！\nEmoji: {emoji}\nPack: `{pack_short_name}`"
         except Exception as e:
             error_msg = str(e)
             if "STICKERSET_INVALID" in error_msg:
                 return False, "STICKERSET_INVALID"
             return False, f"❌ 添加失败: {error_msg}"
 
-    async def create_sticker_set(self, pack_short_name: str, pack_title: str, input_doc: InputDocument, emoji: str, is_animated: bool) -> Tuple[bool, str]:
+    async def create_sticker_set(
+        self,
+        pack_short_name: str,
+        pack_title: str,
+        input_doc: InputDocument,
+        emoji: str,
+        is_animated: bool
+    ) -> Tuple[bool, str]:
         sticker_item = InputStickerSetItem(document=input_doc, emoji=emoji)
         try:
             await self.client.invoke(
@@ -167,15 +182,16 @@ class StickerManager:
                     videos=is_animated
                 )
             )
-            return True, f"✅ 成功创建贴纸包 `{pack_short_name}`"
+            return True, f"✅ 成功创建贴纸包并添加！\nEmoji: {emoji}\nPack: `{pack_short_name}`"
         except Exception as e:
             return False, f"❌ 创建贴纸包失败: {e}"
 
 
 # ============================================================
-# 文件清理
+# 文件清理工具
 # ============================================================
 class FileCleanup:
+
     def __init__(self):
         self.files_to_delete = []
 
@@ -186,15 +202,16 @@ class FileCleanup:
     def cleanup(self):
         for file_path in self.files_to_delete:
             try:
-                os.remove(file_path)
-                logger.info(f"已删除临时文件: {file_path}")
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                    logger.info(f"已删除临时文件: {file_path}")
             except Exception as e:
                 logger.warning(f"删除文件失败 {file_path}: {e}")
         self.files_to_delete.clear()
 
 
 # ============================================================
-# 主命令处理
+# 主处理逻辑
 # ============================================================
 @Client.on_message(filters.me & filters.reply & filters.command("adds", prefixes=[",", "，"]))
 async def add_sticker(client: Client, message: types.Message):
@@ -229,7 +246,8 @@ async def add_sticker(client: Client, message: types.Message):
             return await message.edit("❌ 下载失败")
 
         await message.edit("🔄 正在转换格式...")
-        processed_path = await MediaConverter.convert_to_sticker_format(dl_path, is_animated)
+        converter = MediaConverter()
+        processed_path = await converter.convert_to_sticker_format(dl_path, is_animated)
         cleanup.add(processed_path)
         if not processed_path:
             return await message.edit("❌ 格式转换失败,请检查 FFmpeg 是否正确安装")
@@ -253,11 +271,8 @@ async def add_sticker(client: Client, message: types.Message):
     except FloodWait as e:
         await message.edit(f"⚠️ 触发频率限制,请等待 {e.value} 秒后重试")
         logger.warning(f"FloodWait: {e.value}s")
-
     except Exception as e:
-        error_msg = f"❌ 发生错误: {str(e)}"
-        await message.edit(error_msg)
+        await message.edit(f"❌ 发生错误: {e}")
         logger.exception("处理贴纸时发生异常")
-
     finally:
         cleanup.cleanup()
