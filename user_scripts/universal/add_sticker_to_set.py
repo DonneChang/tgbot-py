@@ -129,7 +129,7 @@ class StickerManager:
 
             input_doc = raw.types.InputDocument(
                 id=doc.file_id,
-                access_hash=doc.access_hash,
+                #access_hash=doc.access_hash,
                 # Pyrogram v2 里可以不提供 file_reference
             )
 
